@@ -1,162 +1,88 @@
 #define _CRT_SECURE_NO_WARNINGS 1
 #include<stdio.h>
+#include<string.h>
 #include<stdlib.h>
+#include<assert.h>
+#include<stdbool.h>
 
-typedef int HPDataType;
+#include"Queue.h"
 
-void swap(HPDataType* x, HPDataType* y)
+typedef char BTDataType;
+
+typedef struct BinaryTreeNode
 {
-	HPDataType tmp = 0;
-	tmp = *x;
-	*x = *y;
-	*y = tmp;
-}
+	BTDataType val;
+	struct BinaryTreeNode* left;
+	struct BinaryTreeNode* right;
+}BTNode;
 
-void _AdjustDown(HPDataType* a, size_t size, size_t root)
+// 通过前序遍历的数组"ABD##E#H##CF##G##"构建二叉树
+BTNode* BulidTree(char* str, BTNode* root, int* i)
 {
-	size_t parent = root;
-	size_t child = parent * 2 + 1;
-	while (child < size)
-	{
-		if (child + 1 < size && a[child + 1] > a[child])
-		{
-			child++;
-		}
-		if (a[parent] < a[child])
-		{
-			swap(&a[parent], &a[child]);
-			parent = child;
-			child = parent * 2 + 1;
-		}
-		else
-			break;
-	}
-
+    if (str[*i] == '#')
+    {
+        (*i)++;
+        return NULL;
+    }
+    root = (BTNode*)malloc(sizeof(BTNode));
+    root->val = str[(*i)++];
+    root->left = BulidTree(str, root->left, i);
+    root->right = BulidTree(str, root->right, i);
+    return root;
 }
-
-void AdjustDown(HPDataType* a, size_t size, size_t root)
+// 二叉树销毁
+void BinaryTreeDestory(BTNode* root)
 {
-	size_t parent = root;
-	size_t child = parent * 2 + 1;
-	while (child < size)
-	{
-		if (child + 1 < size && a[child + 1] < a[child])
-		{
-			child++;
-		}
-		if (a[parent] > a[child])
-		{
-			swap(&a[parent], &a[child]);
-			parent = child;
-			child = parent * 2 + 1;
-		}
-		else
-			break;
-	}
-
+    if (root == NULL)
+        return;
+    BinaryTreeDestory(root->left);
+    BinaryTreeDestory(root->right);
+    free(root);
 }
-
-void HeapSortDown(int* a, int size)
+// 二叉树节点个数
+int BinaryTreeSize(BTNode* root);
+// 二叉树叶子节点个数
+int BinaryTreeLeafSize(BTNode* root);
+// 二叉树第k层节点个数
+int BinaryTreeLevelKSize(BTNode* root, int k);
+// 二叉树查找值为x的节点
+BTNode* BinaryTreeFind(BTNode* root, BTDataType x);
+// 二叉树前序遍历 
+void BinaryTreePrevOrder(BTNode* root)
 {
-	int i = (size - 1 - 1) / 2;
-	while (i >= 0)
-	{
-		AdjustDown(a, size, i);
-		i--;
-	}
-	int end = size - 1;
-	while (end > 0)
-	{
-		int temp = a[0];
-		a[0] = a[end];
-		a[end] = temp;
-		end--;
-		size--;
-		AdjustDown(a, size, 0);
-	}
+    if (root == NULL)
+        return;
+    printf("%c ", root->val);
+    BinaryTreeInOrder(root->left);
+    BinaryTreeInOrder(root->right);
 }
-
-void HeapSortUp(int* a, int size)
+// 二叉树中序遍历
+void BinaryTreeInOrder(BTNode* root)
 {
-	int i = (size - 1 - 1) / 2;
-	while (i >= 0)
-	{
-		_AdjustDown(a, size, i);
-		i--;
-	}
-	int end = size - 1;
-	while (end > 0)
-	{
-		int temp = a[0];
-		a[0] = a[end];
-		a[end] = temp;
-		end--;
-		size--;
-		_AdjustDown(a, size, 0);
-	}
+    if (root == NULL)
+        return;
+    BinaryTreeInOrder(root->left);
+    printf("%c ", root->val);
+    BinaryTreeInOrder(root->right);
 }
-
-void Top_K(int* a,int size ,int k)
+// 二叉树后序遍历
+void BinaryTreePostOrder(BTNode* root)
 {
-	for (int i = 0; i < k; i++)
-	{
-		AdjustDown(a, k, i);
-	}
-	for (int i = k; i < size; i++)
-	{
-		if (a[i] > a[0])
-		{
-			swap(&a[i], &a[0]);
-			AdjustDown(a, k, 0);
-		}
-	}
+    if (root == NULL)
+        return;
+    BinaryTreeInOrder(root->left);
+    BinaryTreeInOrder(root->right);
+    printf("%c ", root->val);
 }
+// 层序遍历
+void BinaryTreeLevelOrder(BTNode* root);
+// 判断二叉树是否是完全二叉树
+int BinaryTreeComplete(BTNode* root);
 
 int main()
 {
-	//int a[10] = { 3,7,24,12,9,14,34,40,56,78 };
-	//for (int i = 0; i < 10; i++)
-	//{
-	//	printf("%d ", a[i]);
-	//}
-	//printf("\n");
-	////降序
-	//HeapSortDown(a, 10);
-	//for (int i = 0; i < 10; i++)
-	//{
-	//	printf("%d ", a[i]);
-	//}
-	//printf("\n");
-	////升序
-	//HeapSortUp(a, 10);
-	//for (int i = 0; i < 10; i++)
-	//{
-	//	printf("%d ", a[i]);
-	//}
-	//printf("\n");
-
-
-	int n = 10000;
-	int* a = (int*)malloc(sizeof(int) * n);
-	srand(time(0));
-	for (size_t i = 0; i < n; ++i)
-	{
-		a[i] = rand() % 1000000;
-	}
-	a[5] = 1000000 + 1;
-	a[1231] = 1000000 + 2;
-	a[531] = 1000000 + 3;
-	a[5121] = 1000000 + 4;
-	a[115] = 1000000 + 5;
-	a[2335] = 1000000 + 6;
-	a[9999] = 1000000 + 7;
-	a[76] = 1000000 + 8;
-	a[423] = 1000000 + 9;
-	a[3144] = 1000000 + 10;
-	Top_K(a, n, 10);
-	for (int i = 0; i < 10; i++)
-	{
-		printf("%d ", a[i]);
-	}
+	char str[101] = { 0 };
+	strcpy(str, "ABD##E#H##CF##G##");
+	
 	return 0;
 }
